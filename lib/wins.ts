@@ -8,6 +8,9 @@ type NewWin = {
   title: string;
   category: string;
   difficulty: number;
+  tags: string[];
+  question: string | null;
+  options: string[] | null;
   localDate: string; // "YYYY-MM-DD"
 };
 
@@ -15,8 +18,9 @@ type NewWin = {
 export async function createWin(win: NewWin): Promise<Win> {
   const sql = await getDb();
   const [row] = await sql<Win[]>`
-    insert into wins (text, title, category, difficulty, local_date)
-    values (${win.text}, ${win.title}, ${win.category}, ${win.difficulty}, ${win.localDate})
+    insert into wins (text, title, category, difficulty, tags, question, options, local_date)
+    values (${win.text}, ${win.title}, ${win.category}, ${win.difficulty},
+            ${win.tags}, ${win.question}, ${win.options}, ${win.localDate})
     returning id, text, title, category, difficulty, tags, logged_at,
               local_date::text as local_date, question, options, answer
   `;

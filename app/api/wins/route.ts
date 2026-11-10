@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isAuthorized, unauthorized } from "@/lib/auth";
+import { parseWin } from "@/lib/ai";
 import { todayLocal } from "@/lib/dates";
 import { createWin, listWins } from "@/lib/wins";
 
@@ -23,14 +24,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const { text, difficulty = 3, local_date = todayLocal() } = parsed.data;
+  const { text, difficulty, local_date = todayLocal() } = parsed.data;
 
-  // No AI yet (Phase 2): the title is the text and the category is "Personal".
+  // The AI (or the offline parser) fills in title, category, tags, etc.
+  const ai = await parseWin(text);
+
   const win = await createWin({
     text,
-    title: text,
-    category: "Personal",
-    difficulty,
+    title: ai.title,
+    category: ai.category,
+    // A difficulty the user picked always beats the AI's guess.
+    difficulty: difficulty ?? ai.difficulty,
+    tags: ai.tags,
+    question: ai.question,
+    options: ai.options,
     localDate: local_date,
   });
 
